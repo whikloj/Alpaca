@@ -1,8 +1,8 @@
-# Islandora-Sync 
+# Islandora Sync
 
 ## Introduction
 
-Event driven middleware based on Apache Camel that synchronizes a Fedora 4 JCR with a Drupal CMS.  
+Event driven middleware based on Apache Camel that synchronizes a Fedora 4 JCR with a Drupal CMS.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ Event driven middleware based on Apache Camel that synchronizes a Fedora 4 JCR w
 
 ## Compilation
 
-`mvn install`
+`mvn package`
 
 ## Deployment
 
@@ -32,5 +32,3 @@ If you would like to contribute, please check out our helpful [Documentation for
 ## License
 
 [GPLv3](http://www.gnu.org/licenses/gpl-3.0.txt)
-
-
