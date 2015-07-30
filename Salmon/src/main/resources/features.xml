@@ -10,5 +10,7 @@
     <feature version="${camel.version.range}">camel-http</feature>
     <feature version="${camel.version.range}">camel-cache</feature>
     <feature version="${camel.version.range}">camel-jsonpath</feature>
+    <feature version="${camel.version.range}">camel-script</feature>
+    <feature version="${camel.version.range}">camel-script-javascript</feature>
   </feature>
 </features>
