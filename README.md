@@ -1,4 +1,7 @@
-# Islandora-Sync 
+# ![Salmon](https://cloud.githubusercontent.com/assets/218561/18217846/143cd4c2-712d-11e6-8428-1b721f3ad164.png) Salmon
+[![Build Status](https://travis-ci.org/Islandora-CLAW/Salmon.svg?branch=master)](https://travis-ci.org/Islandora-CLAW/Salmon)
+[![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
 
 ## Introduction
 
@@ -6,7 +9,7 @@ Event driven middleware based on Apache Camel that synchronizes a Fedora 4 JCR w
 
 ## Requirements
 
-* Java 7
+* Java 8
 * Maven 3
 * A servlet container
 
