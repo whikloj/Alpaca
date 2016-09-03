@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Event driven middleware based on Apache Camel that synchronizes a Fedora 4 JCR with a Drupal CMS.  
+Event driven middleware based on Apache Camel that synchronizes a Fedora 4 Repository with a Drupal CMS.
 
 ## Requirements
 
