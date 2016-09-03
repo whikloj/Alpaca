@@ -14,7 +14,7 @@
         <setProperty propertyName="CamelFcrepoIdentifier"><simple>${headers[org.fcrepo.jms.identifier]}</simple></setProperty>
         <choice>
           <when>
-              <simple>${headers[org.fcrepo.jms.eventType]} contains 'http://fedora.info/definitions/v4/repository#NODE_REMOVED'</simple>
+              <simple>${headers[org.fcrepo.jms.eventType]} contains 'http://fedora.info/definitions/v4/event#ResourceDeletion'</simple>
               <to uri="direct:handleNodeRemovedEvent"/>
           </when>
           <otherwise>
