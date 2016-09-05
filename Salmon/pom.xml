@@ -210,7 +210,7 @@
   <scm>
     <connection>scm:git:git@github.com:Islandora-CLAW/Salmon.git</connection>
     <developerConnection>scm:git:git@github.com:Islandora-CLAW/Salmon.git</developerConnection>
-    <url>https://github.com/islandora-claw/Alpaca</url>
+    <url>https://github.com/islandora-CLAW/Salmon</url>
     <tag>HEAD</tag>
   </scm>
 
