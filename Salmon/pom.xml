@@ -11,6 +11,7 @@
 
   <groupId>ca.islandora.sync</groupId>
   <artifactId>salmon-sync-gateway</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <organization>
@@ -54,7 +55,7 @@
     <dependency>
       <groupId>ca.islandora.component</groupId>
       <artifactId>islandora-camel-component</artifactId>
-      <version>${project.version}</version>
+      <version>${islandora-component.version}</version>
     </dependency>
 
     <!-- logging -->
