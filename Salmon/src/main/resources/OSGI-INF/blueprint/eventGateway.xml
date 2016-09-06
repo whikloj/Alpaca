@@ -98,7 +98,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <transform><simple>${null}</simple></transform>
-        <recipientList><simple>http:{{islandora.drupal.baseurl}}/node/${property.uuid}</simple></recipientList>
+        <recipientList><simple>{{islandora.drupal.baseurl}}/node/${property.uuid}</simple></recipientList>
         <setProperty propertyName="node"><simple>${bodyAs(String)}</simple></setProperty>
     </route>
 
@@ -127,7 +127,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setBody><simple>${null}</simple></setBody>
-        <recipientList><simple>http:{{islandora.drupal.baseurl}}/rdf_mapping/node/${property.contentType}</simple></recipientList>
+        <recipientList><simple>{{islandora.drupal.baseurl}}/rdf_mapping/node/${property.contentType}</simple></recipientList>
         <setProperty propertyName="mappings"><simple>${bodyAs(String)}</simple></setProperty>
     </route>
 
@@ -147,7 +147,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setHeader headerName="Ignore-Hooks"><simple>true</simple></setHeader>
-        <recipientList><simple>http:{{islandora.drupal.baseurl}}/node/${property.uuid}</simple></recipientList>
+        <recipientList><simple>{{islandora.drupal.baseurl}}/node/${property.uuid}</simple></recipientList>
     </route>
 
     <route>
@@ -160,7 +160,7 @@
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setHeader headerName="Ignore-Hooks"><simple>true</simple></setHeader>
         <setBody><simple>{"fedoraUri": "${property.CamelFcrepoBaseUrl}${property.CamelFcrepoIdentifier}"}</simple></setBody>
-        <to uri="http:{{islandora.drupal.baseurl}}/delete_by_fedora_uri"/>
+        <to uri="{{islandora.drupal.baseurl}}/delete_by_fedora_uri"/>
     </route>
 
     <route>
@@ -218,7 +218,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setHeader headerName="Ignore-Hooks"><simple>true</simple></setHeader>
-        <recipientList><simple>http:{{islandora.drupal.baseurl}}/tn</simple></recipientList>
+        <recipientList><simple>{{islandora.drupal.baseurl}}/tn</simple></recipientList>
     </route>
 
     <route>
@@ -234,7 +234,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setHeader headerName="Ignore-Hooks"><simple>true</simple></setHeader>
-        <recipientList><simple>http:{{islandora.drupal.baseurl}}/medium_size</simple></recipientList>
+        <recipientList><simple>{{islandora.drupal.baseurl}}/medium_size</simple></recipientList>
     </route>
   </routeContext>
 

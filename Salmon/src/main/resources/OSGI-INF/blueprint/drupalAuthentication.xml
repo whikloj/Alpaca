@@ -66,7 +66,7 @@
         <setHeader headerName="CamelHttpMethod"><constant>POST</constant></setHeader>
         <setHeader headerName="Content-Type"><constant>application/json</constant></setHeader>
         <setBody><simple>{"username": "{{islandora.drupal.username}}", "password" : "{{islandora.drupal.password}}"}</simple></setBody>
-        <to uri="http:{{islandora.drupal.baseurl}}/user/login"/>
+        <to uri="{{islandora.drupal.baseurl}}/user/login"/>
         <setProperty propertyName="authResponse"><simple>${bodyAs(String)}</simple></setProperty>
         <to uri="direct:extractDrupalSession"/>
         <to uri="direct:extractDrupalToken"/>
@@ -117,7 +117,7 @@
         <setHeader headerName="X-CSRF-Token"><simple>${property.token}</simple></setHeader>
         <setHeader headerName="Cookie"><simple>${property.cookie}</simple></setHeader>
         <setBody><simple>${null}</simple></setBody>
-        <to uri="http:{{islandora.drupal.baseurl}}/user/logout"/>
+        <to uri="{{islandora.drupal.baseurl}}/user/logout"/>
     </route>
 
   </routeContext>

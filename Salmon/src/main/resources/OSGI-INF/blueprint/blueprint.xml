@@ -10,17 +10,16 @@
   <!-- Load Configuration File -->
   <cm:property-placeholder id="properties" persistent-id="ca.islandora.sync" update-strategy="reload">
     <cm:default-properties>
-      <cm:property name="islandora.drupal.baseurl" value="localhost/islandora"/>
+      <cm:property name="islandora.drupal.baseurl" value="http://localhost/islandora"/>
       <cm:property name="islandora.drupal.username" value=""/>
       <cm:property name="islandora.drupal.password" value=""/>
-      <cm:property name="islandora.fcrepo.baseurl" value="localhost:8080/fcrepo/rest"/>
+      <cm:property name="islandora.fcrepo.baseurl" value="http://localhost:8080/fcrepo/rest"/>
       <cm:property name="islandora.php.workingDir" value="/home/vagrant/islandora/camel/commands/bin"/>
     </cm:default-properties>
   </cm:property-placeholder>
 
-  <!-- Force load the http component to make sure the required Exceptions get
-       loaded without having to add a Java class with an import statement. -->
-  <bean id="http" class="org.apache.camel.component.http.HttpComponent"/>
+  <bean id="http" class="org.apache.camel.component.http4.HttpComponent"/>
+  <bean id="https" class="org.apache.camel.component.http4.HttpComponent"/>
 
   <!-- Islandora Component Configuration -->
   <bean id="islandora" class="ca.islandora.component.IslandoraComponent">
