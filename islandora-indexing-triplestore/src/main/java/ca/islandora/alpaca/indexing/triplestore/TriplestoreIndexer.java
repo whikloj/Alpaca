@@ -63,11 +63,11 @@ public class TriplestoreIndexer extends RouteBuilder {
               .streamCaching()
               .toD("${exchangeProperty.url}&connectionClose=true")
               .log(DEBUG, LOGGER, "Retrieved content from Drupal")
-              .to("log:ca.islandora.alpaca.indexing.triplestore?loglevel=TRACE")
+              .to("log:ca.islandora.alpaca.indexing.triplestore?level=TRACE")
               .setHeader(FCREPO_URI, simple("${exchangeProperty.url}"))
               .process(new SparqlUpdateProcessor())
               .log(DEBUG, LOGGER, "Content from SparqlProcessor")
-              .to("log:ca.islandora.alpaca.indexing.triplestore?loglevel=TRACE")
+              .to("log:ca.islandora.alpaca.indexing.triplestore?level=TRACE")
               .log(INFO, LOGGER, "Indexing ${exchangeProperty.url} in triplestore")
               .to("{{triplestore.baseUrl}}?connectionClose=true");
 
