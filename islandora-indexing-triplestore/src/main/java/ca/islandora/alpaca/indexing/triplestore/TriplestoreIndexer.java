@@ -19,6 +19,7 @@
 package ca.islandora.alpaca.indexing.triplestore;
 
 import static org.apache.camel.LoggingLevel.ERROR;
+import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -59,9 +60,14 @@ public class TriplestoreIndexer extends RouteBuilder {
               .removeHeaders("*", "Authorization")
               .setHeader(Exchange.HTTP_METHOD, constant("GET"))
               .setBody(simple("${null}"))
+              .streamCaching()
               .toD("${exchangeProperty.url}&connectionClose=true")
+              .log(DEBUG, LOGGER, "Retrieved content from Drupal")
+              .to("log:ca.islandora.alpaca.indexing.triplestore?loglevel=TRACE")
               .setHeader(FCREPO_URI, simple("${exchangeProperty.url}"))
               .process(new SparqlUpdateProcessor())
+              .log(DEBUG, LOGGER, "Content from SparqlProcessor")
+              .to("log:ca.islandora.alpaca.indexing.triplestore?loglevel=TRACE")
               .log(INFO, LOGGER, "Indexing ${exchangeProperty.url} in triplestore")
               .to("{{triplestore.baseUrl}}?connectionClose=true");
 
