@@ -18,56 +18,58 @@
 
 package ca.islandora.alpaca.indexing.fcrepo;
 
+import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.reifier.RouteReifier;
+import org.apache.camel.test.spring.CamelSpringBootRunner;
+import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-
-import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * @author dannylamb
  */
-public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@UseAdviceWith
+@ContextConfiguration(locations = {"/context-test.xml"})
+@RunWith(CamelSpringBootRunner.class)
+public class FcrepoIndexerTest {
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate template;
 
-    @Override
-    public boolean isUseAdviceWith() {
-        return true;
-    }
-
-    @Override
-    public boolean isUseRouteBuilder() {
-        return false;
-    }
-
-    @Override
-    protected String getBlueprintDescriptor() {
-        return "/OSGI-INF/blueprint/blueprint-test.xml";
-    }
+    @Autowired
+    CamelContext context;
 
     @Test
     public void testNode() throws Exception {
         final String route = "FcrepoIndexerNode";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
                 mockEndpointsAndSkip(
-                    "http://localhost:8000/milliner/node/72358916-51e9-4712-b756-4b0404c91b1d?connectionClose=true"
+                        "http://localhost:8000/milliner/node/72358916-51e9-4712-b756-4b0404c91b1d?connectionClose=true"
                 );
             }
         });
         context.start();
 
         // Assert we POST to milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint(
+        final MockEndpoint milliner = (MockEndpoint) context.getEndpoint(
             "mock:http:localhost:8000/milliner/node/72358916-51e9-4712-b756-4b0404c91b1d"
         );
         milliner.expectedMessageCount(1);
@@ -85,13 +87,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
             );
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
     @Test
     public void testNodeVersion() throws Exception {
         final String route = "FcrepoIndexerNode";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -104,7 +107,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we POST to milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint(
+        final MockEndpoint milliner = (MockEndpoint) context.getEndpoint(
                 "mock:http:localhost:8000/milliner/"
                 + "node/72358916-51e9-4712-b756-4b0404c91b/version"
         );
@@ -121,13 +124,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
                     String.class);
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
     @Test
     public void testNodeDelete() throws Exception {
         final String route = "FcrepoIndexerDeleteNode";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -139,7 +143,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we DELETE to milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint(
+        final MockEndpoint milliner = (MockEndpoint) context.getEndpoint(
             "mock:http:localhost:8000/milliner/node/72358916-51e9-4712-b756-4b0404c91b1d"
         );
         milliner.expectedMessageCount(1);
@@ -156,13 +160,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
             );
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
     @Test
     public void testFile() throws Exception {
         final String route = "FcrepoIndexerFile";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -174,7 +179,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we PUT to gemini with creds.
-        final MockEndpoint gemini = getMockEndpoint(
+        final MockEndpoint gemini = (MockEndpoint) context.getEndpoint(
             "mock:http:localhost:8000/gemini/148dfe8f-9711-4263-97e7-3ef3fb15864f"
         );
         gemini.expectedMessageCount(1);
@@ -196,13 +201,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
             );
         });
 
-        assertMockEndpointsSatisfied();
+        gemini.assertIsSatisfied();
     }
 
     @Test
     public void testExternalFile() throws Exception {
         final String route = "FcrepoIndexerExternalFile";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -214,7 +220,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we POST to Milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint(
+        final MockEndpoint milliner = (MockEndpoint) context.getEndpoint(
             "mock:http:localhost:8000/milliner/external/148dfe8f-9711-4263-97e7-3ef3fb15864f"
         );
         milliner.expectedMessageCount(1);
@@ -235,13 +241,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
             );
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
     @Test
     public void testMedia() throws Exception {
         final String route = "FcrepoIndexerMedia";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -251,7 +258,8 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we POST the event to milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint("mock:http:localhost:8000/milliner/media/field_media_image");
+        final MockEndpoint milliner = (MockEndpoint) context
+                .getEndpoint("mock:http:localhost:8000/milliner/media/field_media_image");
         milliner.expectedMessageCount(1);
         milliner.expectedHeaderReceived("Authorization", "Bearer islandora");
         milliner.expectedHeaderReceived("Content-Location", "http://localhost:8000/media/6?_format=json");
@@ -267,13 +275,14 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
             );
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
     @Test
     public void testVersionMedia() throws Exception {
         final String route = "FcrepoIndexerMedia";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -284,7 +293,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
         context.start();
 
         // Assert we POST the event to milliner with creds.
-        final MockEndpoint milliner = getMockEndpoint("mock:http:localhost:8000/milliner/media/"
+        final MockEndpoint milliner = (MockEndpoint) context.getEndpoint("mock:http:localhost:8000/milliner/media/"
         + "field_media_image/version");
         milliner.expectedHeaderReceived("Authorization", "Bearer islandora");
         milliner.expectedHeaderReceived("Content-Location", "http://localhost:8000/media/7?_format=json");
@@ -297,7 +306,7 @@ public class FcrepoIndexerTest extends CamelBlueprintTestSupport {
                     String.class);
         });
 
-        assertMockEndpointsSatisfied();
+        milliner.assertIsSatisfied();
     }
 
 }

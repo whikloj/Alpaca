@@ -1,0 +1,3 @@
+error.maxRedeliveries: 5
+in.stream: seda:islandora-connector.derivative-index
+derivative.service.url: http://example.org/derivative/convert

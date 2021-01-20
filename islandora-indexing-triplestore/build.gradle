@@ -1,38 +1,42 @@
-apply plugin: 'osgi'
+plugins {
+    id "org.springframework.boot"
+}
 
 description = 'Islandora 8 Triplestore Indexer'
 
 dependencies {
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: versions.logback
+    implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
+    implementation group: 'javax.inject', name: 'javax.inject', version: versions.javaxInject
+    implementation group: 'org.apache.camel', name: 'camel-activemq', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-core', version: versions.camel
-    implementation group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
-    implementation group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
+    implementation group: 'org.apache.camel', name: 'camel-http', version: versions.camel
+    implementation group: 'org.apache.camel', name: 'camel-jackson', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-activemq-starter', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-spring-boot-bom', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-spring-boot-starter', version: versions.camel
     implementation group: 'org.fcrepo.camel', name: 'fcrepo-camel', version: versions.fcrepoCamel
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-    testImplementation group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
-    testImplementation group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.xerces', version: versions.xercesServiceMix
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter'
+    implementation group: 'xerces', name: 'xerces', version: versions.xerces
+    implementation project(':islandora-support')
+
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
+    runtimeOnly group: 'org.apache.jena', name: 'jena-arq', version: versions.jena
+    implementation group: 'org.apache.jena', name: 'jena-core', version: versions.jena
+    runtimeOnly group: 'org.apache.jena', name: 'jena-iri', version: versions.jena
+    runtimeOnly group: 'org.apache.jena', name: 'jena-tdb', version: versions.jena
+
+    testImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: versions.camel
     testImplementation group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
-    testRuntimeOnly group: 'org.slf4j', name: 'slf4j-simple', version: versions.slf4j
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit5Api
+
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
-jar {
+bootJar {
     manifest {
-      description project.description
-      docURL project.docURL
-      vendor project.vendor
-      license project.license
-
-      instruction 'Import-Package', 'org.apache.camel.component.http4,' +
-                            "org.apache.camel;version=\"${versions.camel}\"," +
-                            "org.fcrepo.camel.processor;version=\"${versions.fcrepoCamel}\"," +
-                            defaultOsgiImports
-      instruction 'Export-Package', 'ca.islandora.alpaca.indexing.triplestore'
-    }
-}
-
-artifacts {
-    archives (file('build/cfg/main/ca.islandora.alpaca.indexing.triplestore.cfg')) {
-        classifier 'configuration'
-        type 'cfg'
+        attributes 'Start-Class': 'ca.islandora.alpaca.indexing.triplestore.TriplestoreIndexer'
     }
 }

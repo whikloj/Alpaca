@@ -18,10 +18,15 @@
 
 package ca.islandora.alpaca.indexing.triplestore;
 
+import static java.net.URLEncoder.encode;
+import static org.apache.camel.Exchange.CONTENT_TYPE;
+import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
+
 import java.util.Arrays;
 import java.util.List;
 
 import com.jayway.jsonpath.JsonPathException;
+import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -29,44 +34,41 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
+import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.reifier.RouteReifier;
+import org.apache.camel.test.junit4.TestSupport;
+import org.apache.camel.test.spring.CamelSpringBootRunner;
+import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-
-import static java.net.URLEncoder.encode;
-import static org.apache.camel.Exchange.CONTENT_TYPE;
-import static org.apache.camel.util.ObjectHelper.loadResourceAsStream;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * @author dannylamb
  */
-public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@UseAdviceWith
+@ContextConfiguration(locations = {"/context-test.xml"})
+@RunWith(CamelSpringBootRunner.class)
+public class TriplestoreIndexerTest extends TestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint resultEndpoint;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate template;
 
-    @Override
-    public boolean isUseAdviceWith() {
-        return true;
-    }
-
-    @Override
-    public boolean isUseRouteBuilder() {
-        return false;
-    }
-
-    @Override
-    protected String getBlueprintDescriptor() {
-        return "/OSGI-INF/blueprint/blueprint-test.xml";
-    }
+    @Autowired
+    CamelContext context;
 
     @Test
     public void testParseUrl() throws Exception {
         final String route = "IslandoraTriplestoreIndexerParseUrl";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -81,23 +83,25 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
                 xchange.getIn().setBody(IOUtils.toString(loadResourceAsStream("AS2Event.jsonld"), "UTF-8"))
         );
 
-        this.assertPredicate(
+
+        assertPredicate(
                 exchangeProperty("jsonld_url").isEqualTo("http://localhost:8000/node/1?_format=jsonld"),
                 exchange,
                 true
         );
-        this.assertPredicate(
+        assertPredicate(
                 exchangeProperty("subject_url").isEqualTo("http://localhost:8000/node/1"),
                 exchange,
                 true
         );
-        assertMockEndpointsSatisfied();
+        resultEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testParseUrlDiesOnMalformed() throws Exception {
         final String route = "IslandoraTriplestoreIndexerParseUrl";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -124,15 +128,16 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
             assertIsInstanceOf(RuntimeException.class, e.getCause());
         }
 
-        assertMockEndpointsSatisfied();
+        resultEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testIndex() throws Exception {
         final String route = "IslandoraTriplestoreIndexer";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
-                @Override
-                public void configure() throws Exception {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
                     replaceFromWith("direct:start");
 
                     // Rig Drupal REST endpoint to return canned jsonld
@@ -163,7 +168,8 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
                 subject + " <http://schema.org/dateModified> \"2017-01-30T14:35:57+00:00\" ."
         );
 
-        final MockEndpoint endpoint = getMockEndpoint("mock:http:localhost:8080/bigdata/namespace/islandora/sparql");
+        final MockEndpoint endpoint = (MockEndpoint) context
+                .getEndpoint("mock:http:localhost:8080/bigdata/namespace/islandora/sparql");
 
         endpoint.expectedMessageCount(1);
         endpoint.expectedHeaderReceived(Exchange.HTTP_METHOD, "POST");
@@ -178,13 +184,14 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
                 exchange.getIn().setBody(IOUtils.toString(loadResourceAsStream("AS2Event.jsonld"), "UTF-8"));
         });
 
-        assertMockEndpointsSatisfied();
+        endpoint.assertIsSatisfied();
     }
 
     @Test
     public void testDelete() throws Exception {
         final String route = "IslandoraTriplestoreIndexerDelete";
-        context.getRouteDefinition(route).adviceWith(context, new AdviceWithRouteBuilder() {
+        final ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
+        RouteReifier.adviceWith(mcc.getRouteDefinition(route), mcc, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -193,7 +200,8 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
         });
         context.start();
 
-        final MockEndpoint endpoint = getMockEndpoint("mock:http:localhost:8080/bigdata/namespace/islandora/sparql");
+        final MockEndpoint endpoint = (MockEndpoint) context
+                .getEndpoint("mock:http:localhost:8080/bigdata/namespace/islandora/sparql");
 
         endpoint.expectedMessageCount(1);
         endpoint.expectedHeaderReceived(Exchange.HTTP_METHOD, "POST");
@@ -206,7 +214,7 @@ public class TriplestoreIndexerTest extends CamelBlueprintTestSupport {
             exchange.getIn().setBody(IOUtils.toString(loadResourceAsStream("AS2Event.jsonld"), "UTF-8"));
         });
 
-        assertMockEndpointsSatisfied();
+        endpoint.assertIsSatisfied();
     }
 
 }

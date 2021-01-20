@@ -20,23 +20,32 @@ package ca.islandora.alpaca.indexing.triplestore;
 
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
+import static org.apache.camel.LoggingLevel.TRACE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.jayway.jsonpath.JsonPathException;
 
 import net.minidev.json.JSONArray;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.Exchange;
+import org.apache.camel.component.activemq.ActiveMQComponent;
 import org.fcrepo.camel.processor.SparqlUpdateProcessor;
 import org.fcrepo.camel.processor.SparqlDeleteProcessor;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
 
 /**
  * @author dhlamb
  */
+@SpringBootApplication
+@Component
 public class TriplestoreIndexer extends RouteBuilder {
 
     /**
@@ -44,8 +53,24 @@ public class TriplestoreIndexer extends RouteBuilder {
      */
     private static final Logger LOGGER = getLogger(TriplestoreIndexer.class);
 
+    /**
+     * Static application method.
+     * @param args Command line arguments.
+     */
+    public static void main(final String[] args) {
+        SpringApplication.run(TriplestoreIndexer.class, args);
+    }
+
+    @Autowired
+    private ActiveMQComponent component;
+
+    @PropertyInject("broker.name")
+    private String brokerName;
+
     @Override
     public void configure() {
+        LOGGER.debug("TriplestoreIndexer routes starting");
+        getContext().addComponent(brokerName, component);
         // Global exception handler for the indexer.
         // Just logs after retrying X number of times.
         onException(Exception.class)
@@ -53,11 +78,12 @@ public class TriplestoreIndexer extends RouteBuilder {
             .log(
                 ERROR,
                 LOGGER,
-                "Error indexing ${property.uri} in triplestore: ${exception.message}\n\n${exception.stacktrace}"
+                "Error indexing ${exchangeProperty.uri} in triplestore: ${exception.message}\n\n${exception.stacktrace}"
             );
 
         from("{{index.stream}}")
             .routeId("IslandoraTriplestoreIndexer")
+                .log(TRACE, LOGGER, "Received message on IslandoraTriplestoreIndexer")
               .to("direct:parse.url")
               .removeHeaders("*", "Authorization")
               .setHeader(Exchange.HTTP_METHOD, constant("GET"))

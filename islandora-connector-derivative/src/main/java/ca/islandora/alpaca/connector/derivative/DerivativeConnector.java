@@ -18,18 +18,29 @@
 
 package ca.islandora.alpaca.connector.derivative;
 
+import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.slf4j.LoggerFactory.getLogger;
 
+
 import ca.islandora.alpaca.support.event.AS2Event;
+
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.Exchange;
+import org.apache.camel.component.activemq.ActiveMQComponent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dhlamb
  */
+@SpringBootApplication
+@Component
 public class DerivativeConnector extends RouteBuilder {
 
     /**
@@ -37,8 +48,25 @@ public class DerivativeConnector extends RouteBuilder {
      */
     private static final Logger LOGGER = getLogger(DerivativeConnector.class);
 
+    /**
+     * Static application launcher.
+     * @param args Command line arguments.
+     */
+    public static void main(final String[] args) {
+        SpringApplication.run(DerivativeConnector.class, args);
+    }
+
+    @PropertyInject("broker.name")
+    private String brokerName;
+
+    @Autowired
+    private ActiveMQComponent component;
+
     @Override
     public void configure() {
+        LOGGER.debug("DerivativeConnector routes starting");
+        getContext().addComponent(brokerName, component);
+
         // Global exception handler for the indexer.
         // Just logs after retrying X number of times.
         onException(Exception.class)
@@ -52,6 +80,8 @@ public class DerivativeConnector extends RouteBuilder {
 
         from("{{in.stream}}")
             .routeId("IslandoraConnectorDerivative")
+
+            .log(DEBUG, LOGGER, "Received message on IslandoraConnectorDerivative")
 
             // Parse the event into a POJO.
             .unmarshal().json(JsonLibrary.Jackson, AS2Event.class)

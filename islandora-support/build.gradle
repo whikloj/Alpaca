@@ -1,0 +1,17 @@
+description = 'Islandora 8 Supporting Libraries'
+
+dependencies {
+    implementation group: 'javax.inject', name: 'javax.inject', version: versions.javaxInject
+    implementation group: 'javax.jms', name: 'javax.jms-api', version: versions.javaxJms
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
+    implementation group: 'org.apache.camel', name: 'camel-activemq', version: versions.camel
+    implementation group: 'org.springframework', name: 'spring-context', version: versions.spring
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit5Api
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+}
+
+jar {
+    enabled = true
+}
+

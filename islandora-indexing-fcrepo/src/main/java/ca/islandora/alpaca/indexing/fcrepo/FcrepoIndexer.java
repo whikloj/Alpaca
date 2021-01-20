@@ -18,26 +18,32 @@
 
 package ca.islandora.alpaca.indexing.fcrepo;
 
+import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.ERROR;
 import static org.apache.camel.LoggingLevel.INFO;
-import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import ca.islandora.alpaca.support.event.AS2Event;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.PredicateBuilder;
-import org.apache.camel.http.common.HttpOperationFailedException;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.activemq.ActiveMQComponent;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.slf4j.Logger;
-// import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Danny Lamb
  */
-// @JsonIgnoreProperties(ignoreUnknown = true)
+@SpringBootApplication
+@Component
 public class FcrepoIndexer extends RouteBuilder {
 
     /**
@@ -62,6 +68,15 @@ public class FcrepoIndexer extends RouteBuilder {
      */
     @PropertyInject("gemini.baseUrl")
     private String geminiBaseUrl;
+
+    /**
+     * The name of the JMS endpoint.
+     */
+    @PropertyInject("broker.name")
+    private String brokerName;
+
+    @Autowired
+    private ActiveMQComponent component;
 
     /**
      * The Logger.
@@ -115,9 +130,20 @@ public class FcrepoIndexer extends RouteBuilder {
         return trimmed.endsWith("/") ? trimmed : trimmed + "/";
     }
 
+    /**
+     * Main application.
+     * @param args command line args.
+     */
+    public static void main(final String[] args) {
+        SpringApplication.run(FcrepoIndexer.class, args);
+    }
 
     @Override
     public void configure() {
+        LOGGER.debug("FcrepoIndexer routes starting");
+        LOGGER.debug("Create broker endpoint called {}", brokerName);
+        getContext().setAllowUseOriginalMessage(true);
+        getContext().addComponent(brokerName, component);
 
         final Predicate is412 = PredicateBuilder.toPredicate(simple("${exception.statusCode} == 412"));
         final Predicate is404 = PredicateBuilder.toPredicate(simple("${exception.statusCode} == 404"));
@@ -166,6 +192,7 @@ public class FcrepoIndexer extends RouteBuilder {
                         .when()
                         .simple("${exchangeProperty.event.object.isNewVersion}")
                                 //pass it to milliner
+                                .log(DEBUG, LOGGER, "Create a new version")
                                 .toD(
                                         getMillinerBaseUrl() +
                                         "node/${exchangeProperty.uuid}/version?connectionClose=true"

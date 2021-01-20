@@ -1,33 +1,38 @@
-apply plugin: 'osgi'
+plugins {
+    id "org.springframework.boot"
+}
 
 description = 'Islandora 8 Derivative Connector'
 
 dependencies {
-    implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo 
-    implementation group: 'org.apache.camel', name: 'camel-blueprint', version: versions.camel
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: versions.logback
+    implementation group: 'commons-io', name: 'commons-io', version: versions.commonsIo
+    implementation group: 'javax.inject', name: 'javax.inject', version: versions.javaxInject
+    implementation group: 'org.apache.camel', name: 'camel-activemq', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-core', version: versions.camel
+    implementation group: 'org.apache.camel', name: 'camel-http', version: versions.camel
     implementation group: 'org.apache.camel', name: 'camel-jackson', version: versions.camel
-    implementation group: 'org.apache.camel', name: 'camel-http4', version: versions.camel
+    implementation group: 'org.apache.camel', name: 'camel-jsonpath', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-activemq-starter', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-spring-boot-bom', version: versions.camel
+    implementation group: 'org.apache.camel.springboot', name: 'camel-spring-boot-starter', version: versions.camel
     implementation group: 'org.slf4j', name: 'slf4j-api', version: versions.slf4j
-    implementation project(':islandora-event-support')
-    testImplementation group: 'org.apache.camel', name: 'camel-test-blueprint', version: versions.camel
-    testImplementation group: 'org.apache.servicemix.bundles', name: 'org.apache.servicemix.bundles.xerces', version: versions.xercesServiceMix
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter'
+    implementation project(':islandora-support')
+
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback
+
+    testImplementation group: 'org.apache.camel', name: 'camel-test-spring', version: versions.camel
     testImplementation group: 'org.ow2.asm', name: 'asm-commons', version: versions.asmCommons
-    testRuntimeOnly group: 'org.slf4j', name: 'slf4j-simple', version: versions.slf4j
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit5Api
+    testImplementation group: 'xerces', name: 'xerces', version: versions.xerces
+
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
-jar {
+bootJar {
     manifest {
-      description project.description
-      docURL project.docURL
-      vendor project.vendor
-      license project.license
-
-      instruction 'Import-Package', 'org.apache.camel.component.http4,' +
-                            "org.apache.camel;version=\"${versions.camel}\"," +
-                            "ca.islandora.alpaca.support.event;version=\"${project.version}\"," +
-                            defaultOsgiImports
-      instruction 'Export-Package', 'ca.islandora.alpaca.connector.derivative'
+        attributes 'Start-Class': 'ca.islandora.alpaca.connector.derivative.DerivativeConnector'
     }
 }
 
