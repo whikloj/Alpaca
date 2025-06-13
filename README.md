@@ -10,15 +10,15 @@ Event-driven middleware based on [Apache Camel](http://camel.apache.org/) that s
 
 ## Requirements
 
-This project requires Java 11 and can be built with [Gradle](https://gradle.org).
+This project requires Java 21 and can be built with [Gradle](https://gradle.org).
 
 To build and test locally, clone this repository and then change into the Alpaca directory.
-Next run `./gradlew clean build shadowJar`.
+Next run `./gradlew clean build bootJar`.
 
-The main executable jar is available in the `islandora-alpaca-app/build/libs` directory, with the classifier `-all`.
+The main executable jar is available in the `build/libs` directory.
 
 ie.
-> islandora-alpaca-app/build/libs/islandora-alpaca-app-2.0.0-all.jar
+> build/libs/islandora-alpaca-3.0.0.jar
 
 ## Configuration
 
@@ -31,8 +31,8 @@ Look at the [`example.properties`](example.properties) file to see some example 
 The properties are:
 
 ```
-# Common options
-error.maxRedeliveries=4
+# Maximum number of times to redeliver messages
+alpaca.maxRedeliveries=5
 ```
 This defines how many times to retry a message before failing completely.
 
@@ -85,7 +85,7 @@ These define the various queues to listen on for the indexing/deletion
 messages. The part after `queue:` should match your Islandora instance "Actions".
 
 ```
-fcrepo.indexer.milliner.baseUrl=http://localhost:8000/milliner
+fcrepo.indexer.milliner-baseUrl=http://localhost:8000/milliner
 ```
 This defines the location of your Milliner microservice.
 
@@ -117,15 +117,15 @@ triplestore.indexer.enabled=false
 This defines whether the Triplestore indexer is enabled or not.
 
 ```
-triplestore.index.stream=queue:islandora-indexing-triplestore-index
-triplestore.delete.stream=queue:islandora-indexing-triplestore-delete
+triplestore.indexer.index-stream=queue:islandora-indexing-triplestore-index
+triplestore.indexer.delete-stream=queue:islandora-indexing-triplestore-delete
 ```
 
 These define the various queues to listen on for the indexing/deletion
 messages. The part after `queue:` should match your Islandora instance "Actions".
 
 ```
-triplestore.baseUrl=http://localhost:8080/bigdata/namespace/kb/sparql
+triplestore.indexer.baseUrl=http://localhost:8080/bigdata/namespace/kb/sparql
 ```
 
 This defines the location of your triplestore's SPARQL update endpoint.
@@ -151,7 +151,7 @@ This property allows the concurrent consumers to process concurrently; otherwise
 This service is used to configure an external microservice. This service will deploy multiple copies of its routes
 with different configured inputs and outputs based on properties.
 
-The routes to be configured are defined with the property `derivative.systems.installed` which expects
+The routes to be configured are defined with the property `derivative.systems-installed` which expects
 a comma separated list. Each item in the list defines a new route and must also define 3 additional properties.
 
 ```
@@ -161,14 +161,14 @@ derivative.<item>.enabled=true
 This defines if the `item` service is enabled.
 
 ```
-derivative.<item>.in.stream=queue:islandora-item-connector.index
+derivative.<item>.in-stream=queue:islandora-item-connector.index
 ```
 
 This is the input queue for the derivative microservice.
 The part after `queue:` should match your Islandora instance "Actions".
 
 ```
-derivative.<item>.service.url=http://example.org/derivative/convert
+derivative.<item>.service-url=http://example.org/derivative/convert
 ```
 
 This is the microservice URL to process the request.
@@ -192,18 +192,18 @@ This property allows the concurrent consumers to process concurrently; otherwise
 For example, with two services defined (houdini and crayfits) my configuration would have
 
 ```
-derivative.systems.installed=houdini,fits
+derivative.systems-installed=houdini,fits
 
 derivative.houdini.enabled=true
-derivative.houdini.in.stream=queue:islandora-connector-houdini
-derivative.houdini.service.url=http://127.0.0.1:8000/houdini/convert
+derivative.houdini.in-stream=queue:islandora-connector-houdini
+derivative.houdini.service-url=http://127.0.0.1:8000/houdini/convert
 derivative.houdini.concurrent-consumers=1
 derivative.houdini.max-concurrent-consumers=4
 derivative.houdini.async-consumer=true
 
 derivative.fits.enabled=true
-derivative.fits.in.stream=queue:islandora-connector-fits
-derivative.fits.service.url=http://127.0.0.1:8000/crayfits
+derivative.fits.in-stream=queue:islandora-connector-fits
+derivative.fits.service-url=http://127.0.0.1:8000/crayfits
 derivative.fits.concurrent-consumers=2
 derivative.fits.max-concurrent-consumers=2
 derivative.fits.async-consumer=false
@@ -221,9 +221,9 @@ request.configurer.enabled=true
 Then set the next 3 timeouts (measured in milliseconds) to the desired timeout.
 
 ```shell
-request.timeout=-1
-connection.timeout=-1
-socket.timeout=-1
+request.configurer.request-timeout=-1
+request.configurer.connection-timeout=-1
+request.configurer.socket-timeout=-1
 ```
 
 The default for all three is `-1` which indicates no timeout.
@@ -234,12 +234,12 @@ By default, Alpaca uses two settings for the HTTP component, these are
 * disableStreamCache=true
 * connectionClose=true
 
-If you want to send additional [configuration parameters](https://camel.apache.org/components/3.18.x/http-component.html#_query_parameters) or alter the existing defaults. You can 
-add them as a comma separated list of key=value pairs.
+If you want to send additional [configuration parameters](https://camel.apache.org/components/4.10.x/http-component.html#_query_parameters) or alter the existing defaults.
+You can add them as a comma separated list of key=value pairs.
 
 For example
 ```shell
-http.additional_options=authMethod=Basic,authUsername=Jim,authPassword=1234
+alpaca.additional-http-options=authMethod=Basic,authUsername=Jim,authPassword=1234
 ```
 
 These will be added to ALL http endpoint requests.
@@ -251,7 +251,7 @@ These will be added to ALL http endpoint requests.
 You can see the options by passing the `-h|--help` flag
 
 ```shell
-> java -jar  islandora-alpaca-app/build/libs/islandora-alpaca-app-2.0.0-all.jar -h
+> java -jar  build/libs/islandora-alpaca-app-3.0.0.jar -h
 Usage: alpaca [-hV] [-c=<configurationFilePath>]
   -h, --help      Show this help message and exit.
   -V, --version   Print version information and exit.
@@ -272,7 +272,7 @@ For example if you are using an external properties file located at `/opt/my.pro
 you would run:
 
 ```shell
-java -jar islandora-alpaca-app-2.0.0-all.jar -c /opt/my.properties
+java -jar islandora-alpaca-3.0.0.jar -c /opt/my.properties
 ```
 
 ## Debugging/Troubleshooting
@@ -283,12 +283,27 @@ can use the Java property `islandora.alpaca.log`
 i.e.
 
 ```shell
-java -Dislandora.alpaca.log=DEBUG -jar islandora-alpaca-app-2.0.0-all.jar -c /opt/my.properties
+java -Dislandora.alpaca.log=DEBUG -jar islandora-alpaca-3.0.0.jar -c /opt/my.properties
 ```
 
 ## Documentation
 
 Further documentation for this module is available on the [Islandora documentation site](https://islandora.github.io/documentation/).
+
+### Version 2 to 3 property changes
+If you are upgrading from version 2.x to 3.x, there are some property changes that you will need to be aware of.
+* The `error.maxRedeliveries` property has been renamed to `alpaca.maxRedeliveries`.
+* The `http.additional_options` property has been renamed to `alpaca.additional-http-options`.
+* The `request.timeout` property has been renamed to `request.configurer.request-timeout`.
+* The `connection.timeout` property has been renamed to `request.configurer.connection-timeout`.
+* The `socket.timeout` property has been renamed to `request.configurer.socket-timeout`.
+* The `fcrepo.indexer.milliner.baseUrl` has been renamed to `fcrepo.indexer.milliner-baseUrl`.
+* The `triplestore.baseUrl` property has been renamed to `triplestore.indexer.baseUrl`.
+* The `triplestore.index.stream` property has been renamed to `triplestore.indexer.index-stream`.
+* The `triplestore.delete.stream` property has been renamed to `triplestore.indexer.delete-stream`.
+* The `derivative.systems.installed` property has been renamed to `derivative.systems-installed`.
+* The `derivative.<item>.in.stream` property has been renamed to `derivative.<item>.in-stream`.
+* The `derivative.<item>.service.url` property has been renamed to `derivative.<item>.service-url`.
 
 ## Troubleshooting/Issues
 

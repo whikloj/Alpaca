@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+ca.islandora.alpaca.config.PropertyPostProcessor
